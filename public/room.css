@@ -1,0 +1,17 @@
+.webcam {
+   background-color: blue;
+   width: 600px; /* Set a width */
+   height: 500px; /* Set a height */
+   margin: 10px;  /* Optional: Add spacing */
+}
+.webcam-container{
+   display: flex;
+   flex-direction: row;
+   justify-content: space-around;
+}
+
+.webcam-buttons {
+   display:flex;
+   flex-direction: row;
+   justify-content: space-around;
+}
