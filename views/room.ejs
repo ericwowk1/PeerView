@@ -13,6 +13,7 @@
   </div>
 
   <div class="webcam-container">
+<<<<<<< HEAD
     <video class="webcam" id="person1" autoplay muted></video>
     <video class="webcam" id="person2" autoplay></video>
   </div>
@@ -39,6 +40,25 @@
   //rtc logic  
 
     //stun server configuration
+=======
+    <div class="localwebcam">
+        <video class="webcam" id="person1" autoplay muted></video>
+        <div class="webcam-buttons">
+        <button id="startbutton">Start Webcam</button>
+    <button id="endbutton">End Webcam</button>
+</div>
+    </div>
+    
+    <video class="webcam" id="person2" autoplay></video>
+  </div>
+
+
+  <script>
+    const startbutton = document.getElementById("startbutton");
+    const endbutton = document.getElementById("endbutton");
+    const roomId = "<%= roomId %>";
+    
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
     const configuration = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -49,6 +69,7 @@
       ],
     };
     
+<<<<<<< HEAD
   //sets up rtcpeerconnection with stun server
   const myconnection = new RTCPeerConnection(configuration);
   requestInitialWebcamAccess();
@@ -244,6 +265,146 @@ socket.emit("begin", roomId);
 
 
 
+=======
+    const pc = new RTCPeerConnection(configuration);
+    const constraints = { audio: true, video: true };
+    const selfVideo = document.getElementById("person1");
+    const remoteVideo = document.getElementById("person2");
+    let stream = null;
+    
+    const socket = io();
+
+    //joins specific socket room
+    socket.emit("join-room", roomId);
+
+    //adds remote peer's webcam and audio when received
+    pc.ontrack = ({ streams: [stream] }) => {
+        console.log("Got remote track");
+        remoteVideo.srcObject = stream;
+    };
+
+    // Tracks if we're in the process of making an offer
+    let makingOffer = false;
+    let polite = false;
+    let haspeer = false;
+
+    socket.on("haspeer", () => {
+        haspeer = true;
+        if (stream) {
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            console.log("haspeer tracks running");
+        }
+    });
+
+    socket.on("ispolite", () => {
+        polite = true;
+    });
+
+    pc.onnegotiationneeded = async () => {
+        if (!haspeer) {
+            console.log("No peer yet, skipping negotiation");
+            return;  
+        }
+        try {
+            makingOffer = true;
+            await pc.setLocalDescription();
+            socket.emit("offer", { description: pc.localDescription }, roomId);
+            console.log("offer sent");
+        } catch (err) {
+            console.error(err);
+        } finally {
+            makingOffer = false;
+        }
+    };
+
+    let ignoreOffer = false;
+
+    socket.on("offer", async ({ description }) => { 
+        try {
+            if (description) {
+                const offerCollision =
+                    description.type === "offer" &&
+                    (makingOffer || pc.signalingState !== "stable");
+
+                ignoreOffer = !polite && offerCollision;
+                if (ignoreOffer) {
+                    return;
+                }
+
+                await pc.setRemoteDescription(description);
+                console.log("offer received!");
+                console.log("setRemoteDescription triggered");
+                
+                if (description.type === "offer") {
+                    await pc.setLocalDescription();
+                    socket.emit("answer", { description: pc.localDescription }, roomId);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    socket.on('answer', async ({ description }) => {
+        try {
+            await pc.setRemoteDescription(new RTCSessionDescription(description));
+            console.log("OFFERER SET REMOTE DESCRIPTION FROM ANSWER");
+            
+        } catch (e) {
+            console.error('Error handling answer', e);
+        }
+    });
+
+    socket.on('ice-candidate', async ({ candidate }) => {
+        try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log("new ice candidate addedd");
+        } catch (e) {
+            console.error('Error adding received ICE candidate', e);
+        }
+    });
+
+    pc.onicecandidate = ({ candidate }) => {
+        if (candidate) {
+            socket.emit('ice-candidate', {
+                candidate: candidate,
+                roomId: roomId
+            });
+        }
+    };
+    pc.oniceconnectionstatechange = () => {
+        const state = pc.iceConnectionState;
+        console.log("ICE connection state changed:", state);
+      
+        if (state === "disconnected" || state === "failed") {
+          console.log("Peer connection lost or failed—closing peer connection.");
+          pc.close(); 
+          socket.disconnect();
+
+        }
+      };
+    
+    endbutton.addEventListener("click", async () => {
+        if (stream) {
+    stream.getTracks().forEach(track => {
+      // Stop each track so camera/mic turns off
+      track.stop();
+    });
+  }
+    });
+      
+    startbutton.addEventListener("click", async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            selfVideo.srcObject = stream;
+            if (haspeer) {
+                stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
   </script>
 </body>
 </html>

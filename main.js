@@ -7,8 +7,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+<<<<<<< HEAD
 const rooms = {}; // Room management
 const beginStatus = {}; // Track begin counts for each room
+=======
+const rooms = {};  // Add this back
+
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
 // Set up view engine and static files
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -18,6 +23,7 @@ app.use(express.static(path.join(__dirname, "public")));
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
 
+<<<<<<< HEAD
 
   // Handle joining a room
   socket.on("join-room", (roomId) => {
@@ -118,6 +124,43 @@ io.on("connection", (socket) => {
   });
 });
 
+=======
+  // Handle joining a room
+  socket.on("join-room", (roomId) => {
+    const room = io.sockets.adapter.rooms.get(roomId);
+    const size = room ? room.size : 0;
+  
+    if (size >= 2) {
+        console.log("Room is full!");
+        return;
+    }
+    socket.join(roomId);
+
+    if (size === 0) {
+        console.log(`First user joined: ${socket.id}`);
+        
+    } else if (size === 1) {
+        console.log(`Second user joined: ${socket.id}`);
+        socket.emit('ispolite');  // Only emit to this socket
+        io.to(roomId).emit('haspeer');
+    }
+});
+
+  socket.on("offer", ({description}, roomId) => {
+    socket.to(roomId).emit("offer", { description });
+  })
+  socket.on('answer', ({description}, roomId) => {
+    socket.to(roomId).emit('answer', { description });
+});
+
+socket.on('ice-candidate', ({ candidate, roomId }) => {
+  socket.to(roomId).emit('ice-candidate', { candidate });
+});
+
+});
+
+
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
 // Routes
 app.get("/", (req, res) => {
   res.render("home");
@@ -132,7 +175,10 @@ app.get("/room/:id", (req, res) => {
   res.render("room", { roomId: req.params.id });
 });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
 // Start server
 server.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
@@ -140,7 +186,11 @@ server.listen(3000, () => {
 
 // Function to generate a random room ID
 function generateRandomCode(length = 5) {
+<<<<<<< HEAD
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Set of characters
+=======
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+>>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
   let result = "";
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
