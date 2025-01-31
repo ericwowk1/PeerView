@@ -116,12 +116,28 @@
       }
     });
 
-    socket.on("haspeer", () => {
-      haspeer = true;
-      if (stream) {
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
-        console.log("haspeer tracks running");
-      }
+    socket.on("haspeer", async () => {
+      //  add 500ms delay in production only
+      const delay = window.location.hostname === 'localhost' ? 0 : 1000;
+      
+      setTimeout(async () => {
+        haspeer = true;
+        
+        if (stream) {
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+          
+          if (!polite) { // Only User 1 (impolite) sends the offer
+            try {
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              socket.emit("offer", { description: pc.localDescription }, roomId);
+              console.log("Delayed offer sent after haspeer");
+            } catch (err) {
+              console.error("Delayed offer error:", err);
+            }
+          }
+        }
+      }, delay);
     });
 
     socket.on("ispolite", () => {
