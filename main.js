@@ -112,8 +112,10 @@ app.get("/room/:id", (req, res) => {
   res.render("room", { roomId: req.params.id });
 });
 
-server.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+const port = process.env.PORT || 3000;
+
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
 
 function generateRandomCode(length = 5) {
