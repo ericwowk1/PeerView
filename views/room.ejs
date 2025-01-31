@@ -13,34 +13,6 @@
   </div>
 
   <div class="webcam-container">
-<<<<<<< HEAD
-    <video class="webcam" id="person1" autoplay muted></video>
-    <video class="webcam" id="person2" autoplay></video>
-  </div>
-
-  <div class="webcam-buttons">
-    <button id="startbutton">Start Webcam</button>
-  </div>
-
-  <script>
-    const localVideo = document.getElementById("person1");
-    const remoteVideo = document.getElementById("person2");
-    const startbutton = document.getElementById("startbutton");
-    const roomId = "<%= roomId %>";
-    const socket = io();
-    let role = null;
-    let isWebcamStarted = false;
-    let pendingOffer = null;
-    let webcamAccessGranted = null;
-    const candidateBuffer = []; //icebuffer to solve race condition of ice geting sent before remotedescriptio
-
-
-
-
-  //rtc logic  
-
-    //stun server configuration
-=======
     <div class="localwebcam">
         <video class="webcam" id="person1" autoplay muted></video>
         <div class="webcam-buttons">
@@ -58,7 +30,6 @@
     const endbutton = document.getElementById("endbutton");
     const roomId = "<%= roomId %>";
     
->>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
     const configuration = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -69,203 +40,6 @@
       ],
     };
     
-<<<<<<< HEAD
-  //sets up rtcpeerconnection with stun server
-  const myconnection = new RTCPeerConnection(configuration);
-  requestInitialWebcamAccess();
-
-    
-
-
-        // Join room
-        socket.emit("join-room", roomId);
-
-        //async listens for available ice candidates and adds to connection
-        myconnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit("ice-candidate", {candidate: event.candidate});
-          }
-        };
-
-        socket.on("ice-candidate", async (data) => {
-          try {
-            if (data.candidate) {
-              await myconnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-              console.log("ICE candidate added successfully");
-            }
-          } catch (error) {
-            console.error("Error adding ICE candidate:", error);
-          }
-        });
-  
-  //sets role to offerer
-  socket.on("offerer", async (roomId) => {
-    role = "offerer";
-    console.log("Role set to offerer.");
-  })
-
-  socket.on("receiver", async (roomId) => {
-    role = "receiver";
-    console.log("Role set to receiver.");
-  })
-  
-
-  
-    //if both people join room is ready, start the webrtc connection
-    //we will send offer and answer even if some users tracks arent added once room is ready
-    //on webcam button click we resend the offer with tracks
-    socket.on("room-ready", async (roomId) => { // Added async keyword
-      console.log(`Room ${roomId} is ready.`);
-      if (role === "receiver") {
-        // This is to prevent receiver and sender race condition
-        setTimeout(() => {
-          console.log("Receiver slept for 2 seconds.");
-        }, 2000);
-        if (webcamAccessGranted === null) {
-          console.log("webcam is null initializing now");
-        }
-        offerlistener();
-      } 
-      
-      if (role === "offerer") {
-        try {
-          // Step 1: Create the offer
-          const offer = await myconnection.createOffer();
-          console.log("Offer created:", offer);
-      
-          // Step 2: Set the local description with the offer
-          await myconnection.setLocalDescription(offer);
-          console.log("Local description set with offer.");
-      
-          // Step 3: Emit the offer to the signaling server
-          socket.emit("offer", { offer, roomId});
-          console.log("Offer created and sent.");
-        } catch (error) {
-          console.error("Error creating/sending offer:", error);
-        }
-      
-        // Step 4: Listen for the answer from the receiver
-        socket.on("answer", async ({ answer }) => {
-          try {
-            // Step 5: Set the remote description with the answer
-            myconnection.ontrack = (event) => {
-              console.log("Receiving remote track:", event.streams[0]);
-              if (event.streams && event.streams[0]) {
-                remoteVideo.srcObject = event.streams[0];
-                console.log("Remote video stream set.");
-              } else {
-                console.warn("No streams found in ontrack event.");
-              }
-            };
-      
-            await myconnection.setRemoteDescription(new RTCSessionDescription(answer));
-            console.log("Answer received and set as remote description.");
-      
-            // Step 6: Process any buffered ICE candidates
-            for (const candidate of candidateBuffer) {
-              try {
-                await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
-                console.log("Buffered candidate added:", candidate);
-              } catch (error) {
-                console.error("Error adding buffered ICE candidate:", error);
-              }
-            }
-      
-            // Step 7: Clear the candidate buffer
-            candidateBuffer.length = 0;
-          } catch (error) {
-            console.error("Error setting remote description with answer:", error);
-          }
-        });
-      }
-    });
-    
-      
-
-
-
-
-//ICE CANDIDATES BAD
-   
-
-
-//listens for an offer (used by receiver)
-// Listens for an offer (used by receiver)
-async function offerlistener() {
-  socket.on("offer", async ({ offer }) => {
-    console.log("Offer received by offerer! Processing...");
-    try {
-      // Step 1: Set up the ontrack event handler
-      myconnection.ontrack = (event) => {
-        console.log("Receiving remote track:", event.streams[0]);
-        if (event.streams && event.streams[0]) {
-          remoteVideo.srcObject = event.streams[0];
-          console.log("Remote video stream set.");
-        } else {
-          console.warn("No streams found in ontrack event.");
-        }
-      };
-
-      // Step 2: Set the remote description with the offer
-      await myconnection.setRemoteDescription(new RTCSessionDescription(offer));
-      console.log("Offer set as remote description.");
-
-      // Step 3: Process buffered ICE candidates
-      for (const candidate of candidateBuffer) {
-        try {
-          await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
-          console.log("Buffered candidate added:", candidate);
-        } catch (error) {
-          console.error("Error adding buffered ICE candidate:", error);
-        }
-      }
-
-      // Step 4: Clear the buffer
-      candidateBuffer.length = 0;
-
-      // Step 5: Create and send the answer
-      const answer = await myconnection.createAnswer();
-      await myconnection.setLocalDescription(answer);
-      console.log("Local description set with answer.");
-
-      // Send the answer to the offerer
-      socket.emit("answer", { answer, roomId });
-      console.log("Answer created and sent.");
-    } catch (error) {
-      console.error("Error processing offer:", error);
-    }
-  });
-}
-
-
-
-
-async function requestInitialWebcamAccess() {
-
-  try {
-    console.log("Requesting initial webcam access...");
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-localVideo.srcObject = stream;
-console.log("Local stream obtained:", stream);
-
-// Add each track to the RTCPeerConnection
-stream.getTracks().forEach((track) => {
-  myconnection.addTrack(track, stream);
-  console.log("Track added to RTCPeerConnection:", track);
-});
-socket.emit("begin", roomId);
-    webcamAccessGranted = true;
-  } catch (error) {
-    console.warn("webcam access denied:", error);
-    webcamAccessGranted = false;
-    socket.emit("begin", roomId);
-  }
-};
-
-
-
-
-=======
     const pc = new RTCPeerConnection(configuration);
     const constraints = { audio: true, video: true };
     const selfVideo = document.getElementById("person1");
@@ -295,7 +69,7 @@ socket.emit("begin", roomId);
             console.log("haspeer tracks running");
         }
     });
-
+//dafuqqq
     socket.on("ispolite", () => {
         polite = true;
     });
@@ -404,7 +178,6 @@ socket.emit("begin", roomId);
             console.error(err);
         }
     });
->>>>>>> 20ad411 (webcam webrtc logic fixed, still buggy with users joining/leaving)
   </script>
 </body>
 </html>
