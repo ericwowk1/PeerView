@@ -31,12 +31,21 @@
     
     const configuration = {
       iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun.l.google.com:5349" },
-      { urls: "stun:stun1.l.google.com:3478" },
-      { urls: "stun:stun1.l.google.com:5349" },
-      
-        
+        {
+          urls: ["stun:us-turn6.xirsys.com"]
+        },
+        {
+          username: "uoPXbXCpidmGCONCnrBTv_F_95THKakk4JzBY48y4Ezs4nZ2iQiGInSiV9PdFJLlAAAAAGedMV9lcmljY2MxMDI5MQ==",
+          credential: "4dd43cbe-e011-11ef-ab5b-0242ac140004",
+          urls: [
+            "turn:us-turn6.xirsys.com:80?transport=udp",
+            "turn:us-turn6.xirsys.com:3478?transport=udp",
+            "turn:us-turn6.xirsys.com:80?transport=tcp",
+            "turn:us-turn6.xirsys.com:3478?transport=tcp",
+            "turns:us-turn6.xirsys.com:443?transport=tcp",
+            "turns:us-turn6.xirsys.com:5349?transport=tcp"
+          ]
+        }
       ]
     };
 
@@ -135,9 +144,10 @@
       setTimeout(async () => {
         haspeer = true;
         
-        if (stream) {
+        if (pc.signalingState === "stable" || pc.signalingState === "have-local-offer") {
           stream.getTracks().forEach(track => pc.addTrack(track, stream));
-          
+        }
+        
           if (!polite) { // Only User 1 (impolite) sends the offer
             try {
               const offer = await pc.createOffer();
@@ -147,7 +157,7 @@
             } catch (err) {
               console.error("Delayed offer error:", err);
             }
-          }
+          
         }
       }, delay);
     });
