@@ -91,9 +91,9 @@
         if (state === "disconnected" || state === "failed") {
           console.log("Connection lost to peer");
           pc.close();
-          /*setTimeout(() => {
+          setTimeout(() => {
             initializePeerConnection();
-          }, 1000);*/
+          }, 1000);
         }
       };
 
@@ -197,8 +197,9 @@
           
           if (description.type === "offer") {
             await pc.setLocalDescription();
-            
+            console.log("setlocaldescription from offer socket");
             socket.emit("answer", { description: pc.localDescription }, roomId);
+            console.log("answer emitted");
           }
         }
       } catch (err) {
