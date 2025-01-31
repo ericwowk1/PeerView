@@ -83,7 +83,10 @@
 
     pc = initializePeerConnection();
     
-    const socket = io();
+    const socket = io({
+      transports: ['websocket'],
+      upgrade: false
+    });
     
     let makingOffer = false;
     let polite = false;
