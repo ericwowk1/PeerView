@@ -48,16 +48,22 @@
     const selfVideo = document.getElementById("person1");
     const remoteVideo = document.getElementById("person2");
 
+    const socket = io({
+      transports: ['websocket'],
+      upgrade: false
+    });
+
+    socket.on('ice-candidate', async ({ candidate }) => {
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        console.log("new ice candidate added");
+      } catch (e) {
+        console.error('Error adding received ICE candidate', e);
+      }
+    });
+
     function initializePeerConnection() {
       pc = new RTCPeerConnection(configuration);
-      
-      pc.ontrack = ({ streams: [stream] }) => {
-        console.log("Got remote track, stream ID:", stream.id);
-        console.log("Remote video current src:", remoteVideo.srcObject?.id);
-        remoteVideo.srcObject = stream;
-        console.log("Remote video new src:", remoteVideo.srcObject?.id);
-    };
-
       pc.onicecandidate = ({ candidate }) => {
         if (candidate) {
           socket.emit('ice-candidate', {
@@ -66,6 +72,17 @@
           });
         }
       };
+      
+      pc.ontrack = ({ streams: [stream] }) => {
+        console.log(" pc.ontrack ran inside initializepeerconnection");
+        console.log("Got remote track, stream ID:", stream.id);
+        console.log("Remote video current src:", remoteVideo.srcObject?.id);
+        remoteVideo.srcObject = stream;
+        console.log("Remote video new src:", remoteVideo.srcObject?.id);
+    };
+
+     
+   
 
       pc.onconnectionstatechange = () => {
         const state = pc.connectionState;
@@ -85,10 +102,7 @@
 
     pc = initializePeerConnection();
     
-    const socket = io({
-      transports: ['websocket'],
-      upgrade: false
-    });
+   
     
     let makingOffer = false;
     let polite = false;
@@ -200,14 +214,7 @@
       }
     });
 
-    socket.on('ice-candidate', async ({ candidate }) => {
-      try {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        console.log("new ice candidate added");
-      } catch (e) {
-        console.error('Error adding received ICE candidate', e);
-      }
-    });
+    
 
     window.addEventListener('beforeunload', () => {
       if (currentOffset) {
