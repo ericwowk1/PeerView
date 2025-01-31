@@ -91,10 +91,10 @@
         if (state === "disconnected" || state === "failed") {
           console.log("Connection lost to peer");
           pc.close();
-          setTimeout(() => {
+          /*setTimeout(() => {
             initializePeerConnection();
           }, 1000);
-        }
+        }*/
       };
 
       return pc;
