@@ -53,10 +53,10 @@
       
       pc.ontrack = ({ streams: [stream] }) => {
         console.log("Got remote track, stream ID:", stream.id);
-        console.log("Stream has video tracks:", stream.getVideoTracks().length);
-        console.log("Stream has audio tracks:", stream.getAudioTracks().length);
+        console.log("Remote video current src:", remoteVideo.srcObject?.id);
         remoteVideo.srcObject = stream;
-      };
+        console.log("Remote video new src:", remoteVideo.srcObject?.id);
+    };
 
       pc.onicecandidate = ({ candidate }) => {
         if (candidate) {
