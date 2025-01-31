@@ -5,7 +5,10 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  allowUpgrades: true,
+  transports: ['websocket', 'polling']
+});
 
 const rooms = new Map(); // Track room states instead of socket states
 
