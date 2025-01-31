@@ -65,13 +65,11 @@
     function initializePeerConnection() {
       pc = new RTCPeerConnection(configuration);
       pc.onicecandidate = ({ candidate }) => {
-        if (candidate) {
-          socket.emit('ice-candidate', {
-            candidate: candidate,
-            roomId: roomId
-          });
+        if (candidate && pc.signalingState === "stable") {
+          socket.emit("ice-candidate", { candidate, roomId });
         }
       };
+      
       
       pc.ontrack = ({ streams: [stream] }) => {
         console.log(" pc.ontrack ran inside initializepeerconnection");
@@ -181,6 +179,7 @@
     let ignoreOffer = false;
 
     socket.on("offer", async ({ description }) => {
+      console.log("offer socket ran~~~~~~~");
       try {
         if (description) {
           const offerCollision =
@@ -193,7 +192,7 @@
           }
 
           await pc.setRemoteDescription(description);
-          console.log("offer received!, set offer to localdescription");
+          console.log("offer received!, set offer to remotedescription");
           
           if (description.type === "offer") {
             await pc.setLocalDescription();
