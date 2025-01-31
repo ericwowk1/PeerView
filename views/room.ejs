@@ -52,7 +52,9 @@
       pc = new RTCPeerConnection(configuration);
       
       pc.ontrack = ({ streams: [stream] }) => {
-        console.log("Got remote track");
+        console.log("Got remote track, stream ID:", stream.id);
+        console.log("Stream has video tracks:", stream.getVideoTracks().length);
+        console.log("Stream has audio tracks:", stream.getAudioTracks().length);
         remoteVideo.srcObject = stream;
       };
 
@@ -212,8 +214,11 @@
     startbutton.addEventListener("click", async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log("Got local stream, ID:", stream.id);
+        console.log("Local stream has tracks:", stream.getTracks().map(t => t.kind));
         selfVideo.srcObject = stream;
         if (haspeer) {
+          console.log("Adding tracks to peer, current connection state:", pc.connectionState);
           stream.getTracks().forEach(track => pc.addTrack(track, stream));
         }
       } catch (err) {
