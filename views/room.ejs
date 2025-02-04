@@ -121,23 +121,15 @@
     let currentOffset = null;
     
     const configuration = {
-      iceServers: [
-        {
-          urls: ["stun:us-turn6.xirsys.com"]
-        },
-        {
-          username: "uoPXbXCpidmGCONCnrBTv_F_95THKakk4JzBY48y4Ezs4nZ2iQiGInSiV9PdFJLlAAAAAGedMV9lcmljY2MxMDI5MQ==",
-          credential: "4dd43cbe-e011-11ef-ab5b-0242ac140004",
-          urls: [
-            "turn:us-turn6.xirsys.com:80?transport=udp",
-            "turn:us-turn6.xirsys.com:3478?transport=udp",
-            "turn:us-turn6.xirsys.com:80?transport=tcp",
-            "turn:us-turn6.xirsys.com:3478?transport=tcp",
-            "turns:us-turn6.xirsys.com:443?transport=tcp",
-            "turns:us-turn6.xirsys.com:5349?transport=tcp"
-          ]
-        }
-      ]
+      iceServers: [{   urls: [ "stun:us-turn6.xirsys.com" ]},
+       {   username: "LOkK-PsgeB-sNKm_8L9Zs59dsIyAjRrv9HsdlYiU5qbI17vG05kJFw0ukfeYEpjeAAAAAGehfXxlcmljY2MxMDI5MQ==", 
+         credential: "05d14c4e-e2a1-11ef-9288-0242ac140004",  
+        urls: [       "turn:us-turn6.xirsys.com:80?transport=udp", 
+              "turn:us-turn6.xirsys.com:3478?transport=udp",    
+           "turn:us-turn6.xirsys.com:80?transport=tcp",   
+            "turn:us-turn6.xirsys.com:3478?transport=tcp", 
+              "turns:us-turn6.xirsys.com:443?transport=tcp", 
+              "turns:us-turn6.xirsys.com:5349?transport=tcp"   ]}]
     };
 
    
