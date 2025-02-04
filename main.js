@@ -17,16 +17,7 @@ app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 
 io.on("connection", (socket) => {
-  socket.on("request-offset", (roomId, callback) => {
-    const offset = Date.now();
-    if (rooms.has(roomId)) {
-      const roomState = rooms.get(roomId);
-      roomState.currentOffset = offset;
-    }
-    callback(offset);
-  });
-
-  socket.on("join-room", (roomId, offset) => {
+  socket.on("join-room", (roomId) => {
     const room = io.sockets.adapter.rooms.get(roomId);
     const size = room ? room.size : 0;
 
@@ -37,21 +28,13 @@ io.on("connection", (socket) => {
 
     socket.join(roomId);
     
-    // Check if this is a reconnection with valid offset
     if (rooms.has(roomId)) {
       const roomState = rooms.get(roomId);
-      if (offset && roomState.lastOffset === offset) {
-        console.log(`Valid reconnection for room ${roomId} with offset ${offset}`);
-        socket.emit('ispolite');
-        socket.emit('initiate-reconnect');
-      }
       roomState.participants.add(socket.id);
     } else {
       // New room
       rooms.set(roomId, {
         created: Date.now(),
-        currentOffset: null,
-        lastOffset: null,
         participants: new Set([socket.id])
       });
     }
@@ -62,21 +45,6 @@ io.on("connection", (socket) => {
       console.log(`Second user joined room ${roomId}: ${socket.id}`);
       socket.emit('ispolite');
       io.to(roomId).emit('haspeer');
-    }
-  });
-
-  socket.on("client-disconnect", ({ roomId }, offset, callback) => {
-    if (rooms.has(roomId)) {
-      const roomState = rooms.get(roomId);
-      if (offset === roomState.currentOffset) {
-        roomState.lastOffset = offset;
-        roomState.participants.delete(socket.id);
-        console.log(`User ${socket.id} disconnected from room ${roomId} with valid offset ${offset}`);
-        callback({ success: true });
-      } else {
-        console.log(`Invalid offset for room ${roomId}: expected ${roomState.currentOffset}, got ${offset}`);
-        callback({ success: false });
-      }
     }
   });
 
@@ -91,18 +59,47 @@ io.on("connection", (socket) => {
   socket.on('ice-candidate', ({ candidate, roomId }) => {
     socket.to(roomId).emit('ice-candidate', { candidate });
   });
+  socket.on('manual-disconnect', () => {
+    // Find which room this socket was in
+    for (const [roomId, roomState] of rooms.entries()) {
+      if (roomState.participants.has(socket.id)) {
+        // Remove this participant
+        roomState.participants.delete(socket.id);
+        
+        // Notify remaining participants in the room
+        socket.to(roomId).emit('peer-disconnected');
+        
+        // If room is empty, clean it up
+        if (roomState.participants.size === 0) {
+          rooms.delete(roomId);
+        }
+        
+        console.log(`User ${socket.id} manually disconnected from room ${roomId}`);
+        break;
+      }
+    }
+    // Disconnect the socket
+    socket.disconnect(true);
+  });
 
   socket.on('disconnect', () => {
-    rooms.forEach((state, roomId) => {
-      if (state.participants.has(socket.id)) {
-        state.participants.delete(socket.id);
-        console.log(`User ${socket.id} disconnected from room ${roomId} - keeping room state`);
+    // Keep existing disconnect handler for unexpected disconnections
+    for (const [roomId, roomState] of rooms.entries()) {
+      if (roomState.participants.has(socket.id)) {
+        roomState.participants.delete(socket.id);
+        socket.to(roomId).emit('peer-disconnected');
+        if (roomState.participants.size === 0) {
+          rooms.delete(roomId);
+        }
+        console.log(`User ${socket.id} disconnected from room ${roomId}`);
+        break;
       }
-    });
+    }
   });
-});
+}); // End of io.on("connection") callback
 
 app.get("/", (req, res) => {
+  const message = req.query.disconnected ? "The other participant disconnected from the room." : null;
   res.render("home");
 });
 
@@ -112,7 +109,18 @@ app.get("/create-room", (req, res) => {
 });
 
 app.get("/room/:id", (req, res) => {
-  res.render("room", { roomId: req.params.id });
+  const roomId = req.params.id.toUpperCase();
+  // Validate room ID format
+  if (!/^[A-Z]{5}$/.test(roomId)) {
+      return res.redirect('/?error=invalid');
+  }
+  res.render("room", { roomId: roomId });
+});
+
+app.get("/room", (req, res) => {
+  const roomId = req.query.id.toUpperCase();
+  // Redirect to the room/:id route
+  res.redirect(`/room/${roomId}`);
 });
 
 const port = process.env.PORT || 3000;

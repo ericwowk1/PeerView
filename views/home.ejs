@@ -1,22 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>PeerView</title>
-	
-  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PeerView</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            text-align: center;
+            padding: 4rem 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+            transition: transform 0.3s ease;
+        }
+        
+        .hero-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .main-heading {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.5rem;
+            background: var(--gradient);
+            background-clip: text;
+				color: transparent;
+        }
+        
+        .sub-heading {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 3rem;
+        }
+        
+        .cta-button {
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .cta-button-primary {
+            background: var(--gradient);
+            color: white;
+        }
+        
+        .cta-button-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .room-input {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .room-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .alert-message {
+            border-radius: 0.75rem;
+        }
+    </style>
 </head>
 
+<body class="container">
+    <% if (locals.message) { %>
+        <div class="alert alert-info alert-message">
+            <%= message %>
+        </div>
+    <% } %>
 
-<body>
-<h1>WELCOME TO PEERVIEW</h1>
-<h2>click create chatroom to get unique chatroom ID</h2>
-<form action="/create-room">
-   <button type="submit">Start Room</button>
- </form>
- 
+    <div class="hero-section">
+        <h1 class="main-heading display-3 mb-3">WELCOME TO PEERVIEW</h1>
+        <p class="sub-heading">Video Chat with your friends instantly<br>No signup required!</p>
+        
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex flex-column gap-4">
+                    <!-- Create Room Button -->
+                    <div>
+                        <form action="/create-room">
+                            <button type="submit" class="cta-button cta-button-primary w-100">
+                                🚀 Create New Room
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="text-muted text-center">OR</div>
+
+                    <!-- Join Room Form -->
+                    <form action="/room" method="get" class="d-flex gap-2">
+                        <input type="text" 
+                               class="form-control room-input"
+                               id="roomId" 
+                               name="id" 
+                               pattern="[A-Z]{5}"
+                               maxlength="5"
+                               placeholder="Enter 5-digit room code"
+                               required>
+                        <button type="submit" class="cta-button cta-button-primary">
+                            Join Room
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-<script src="main.js"></script>
