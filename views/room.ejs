@@ -10,17 +10,17 @@
         :root {
             --primary-color: #6366f1;
             --secondary-color: #4f46e5;
-            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            
         }
         
         body {
-            background: #f8f9fa;
+            background: #bcc3ca;
             min-height: 100vh;
             padding: 1rem 0;
         }
         
         .room-container {
-            background: white;
+            background: #bcc3ca;
             border-radius: 1rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             padding: 1.5rem;
@@ -32,13 +32,11 @@
         }
 
         .room-id h1 {
-            font-weight: 700;
+            font-weight: 1000;
             letter-spacing: -0.025em;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
+            color: var(--primary-color);
+         
+           
             font-size: 2rem;
         }
 
@@ -76,7 +74,7 @@
         }
 
         #startbutton {
-            background: var(--gradient);
+            background:var(--primary-color) 
         }
 
         #startbutton:hover {

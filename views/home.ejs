@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PeerView</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #6366f1;
@@ -12,32 +11,48 @@
             --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: #f8f9fa;
+            background: #bcc3ca;
             min-height: 100vh;
+            font-family: system-ui, sans-serif;
+            padding: 0 1rem;
+            
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            background-color: #bcc3ca;
         }
         
         .hero-section {
             text-align: center;
-            padding: 4rem 0;
+            padding: 4rem 2rem;
             background: white;
             border-radius: 1rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 2rem 0;
-            transition: transform 0.3s ease;
+            margin: 2rem auto;
+            
+            max-width: 800px;
         }
         
-        .hero-section:hover {
-            transform: translateY(-5px);
-        }
-        
+       
         .main-heading {
             font-weight: 700;
             letter-spacing: -0.025em;
             margin-bottom: 1.5rem;
             background: var(--gradient);
+            -webkit-background-clip: text;
             background-clip: text;
-				color: transparent;
+            color: transparent;
+            font-size: 2.5rem;
         }
         
         .sub-heading {
@@ -46,22 +61,35 @@
             margin-bottom: 3rem;
         }
         
-        .cta-button {
+        .button {
             padding: 1rem 2rem;
             border-radius: 0.75rem;
             font-weight: 600;
             transition: all 0.3s ease;
             border: none;
-        }
-        
-        .cta-button-primary {
+            cursor: pointer;
             background: var(--gradient);
             color: white;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
-        .cta-button-primary:hover {
+        .button:hover {
             opacity: 0.9;
             transform: translateY(-2px);
+        }
+
+        .divider {
+            color: #6b7280;
+            margin: 2rem 0;
+        }
+        
+        .join-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .room-input {
@@ -69,63 +97,75 @@
             border-radius: 0.75rem;
             border: 2px solid #e5e7eb;
             transition: all 0.3s ease;
-        }
-        
-        .room-input:focus {
+            flex: 1;
+            font-size: 1rem;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
-        .alert-message {
-            border-radius: 0.75rem;
+      
+        
+        .join-button {
+            padding: 1rem 2rem;
+            white-space: nowrap;
         }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background: #e0f2fe;
+            color: #075985;
+            margin: 1rem auto;
+            max-width: 800px;
+        }
+
+        @media (max-width: 640px) {
+            .join-form {
+                flex-direction: column;
+            }
+            
+            .join-button {
+                width: 100%;
+            }
+        }
+        
     </style>
 </head>
 
-<body class="container">
-    <% if (locals.message) { %>
-        <div class="alert alert-info alert-message">
-            <%= message %>
-        </div>
-    <% } %>
-
-    <div class="hero-section">
-        <h1 class="main-heading display-3 mb-3">WELCOME TO PEERVIEW</h1>
-        <p class="sub-heading">Video Chat with your friends instantly<br>No signup required!</p>
-        
-        <div class="row g-4 justify-content-center">
-            <div class="col-lg-8">
-                <div class="d-flex flex-column gap-4">
-                    <!-- Create Room Button -->
-                    <div>
-                        <form action="/create-room">
-                            <button type="submit" class="cta-button cta-button-primary w-100">
-                                🚀 Create New Room
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="text-muted text-center">OR</div>
-
-                    <!-- Join Room Form -->
-                    <form action="/room" method="get" class="d-flex gap-2">
-                        <input type="text" 
-                               class="form-control room-input"
-                               id="roomId" 
-                               name="id" 
-                               pattern="[A-Z]{5}"
-                               maxlength="5"
-                               placeholder="Enter 5-digit room code"
-                               required>
-                        <button type="submit" class="cta-button cta-button-primary">
-                            Join Room
-                        </button>
-                    </form>
-                </div>
+<body>
+    <div class="container">
+        <% if (locals.message) { %>
+            <div class="alert">
+                <%= message %>
             </div>
+        <% } %>
+
+        <div class="hero-section">
+            <h1 class="main-heading">WELCOME TO PEERVIEW</h1>
+            <p class="sub-heading">Video Chat with your friends instantly<br>No signup required!</p>
+            
+            <form action="/create-room">
+                <button type="submit" class="button">
+                    🚀 Create New Room
+                </button>
+            </form>
+
+            <div class="divider">OR</div>
+
+            <form action="/room" method="get" class="join-form">
+                <input type="text" 
+                       class="room-input"
+                       id="roomId" 
+                       name="id" 
+                       pattern="[A-Z]{5}"
+                       maxlength="5"
+                       placeholder="Enter 5-digit room code"
+                       required>
+                <button type="submit" class="button join-button">
+                    Join Room
+                </button>
+            </form>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
